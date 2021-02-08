@@ -36,6 +36,7 @@ class Blockchain {
     async initializeChain() {
         if( this.height === -1){
             let block = new BlockClass.Block({data: 'Genesis Block'});
+            block.height = 0;
             await this._addBlock(block);
         }
     }
@@ -64,7 +65,15 @@ class Blockchain {
     _addBlock(block) {
         let self = this;
         return new Promise(async (resolve, reject) => {
+           block.time = new Date().getTime().toString().slice(0,-3);
+           if(self.chain.length > 0){
+            block.previousBlockHash = self.chain[self.chain.length-1].hash;
+            block.height = self.chain.length;
+           }
+           block.hash = SHA256(JSON.stringify(block)).toString();
+           self.chain.push(block);
            
+           resolve(this.getBlockByHash(block.hash));
         });
     }
 
@@ -91,7 +100,7 @@ class Blockchain {
      * 1. Get the time from the message sent as a parameter example: `parseInt(message.split(':')[1])`
      * 2. Get the current time: `let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));`
      * 3. Check if the time elapsed is less than 5 minutes
-     * 4. Veify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
+     * 4. Verify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
      * 5. Create the block and add it to the chain
      * 6. Resolve with the block added.
      * @param {*} address 
@@ -102,7 +111,8 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            
+            let block = new BlockClass.Block({data: 'Star'});
+            resolve(this._addBlock(block));
         });
     }
 
@@ -115,7 +125,12 @@ class Blockchain {
     getBlockByHash(hash) {
         let self = this;
         return new Promise((resolve, reject) => {
-           
+            let block = self.chain.filter(p => p.hash === hash)[0];
+            if(block){
+                resolve(block);
+            } else {
+                resolve(null);
+            }
         });
     }
 
@@ -146,7 +161,12 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            
+            stars = self.chain.filter(p => p.address === address)[0];
+            if(stars.length > 0){
+                resolve(stars);
+            } else {
+                resolve(null);
+            }
         });
     }
 

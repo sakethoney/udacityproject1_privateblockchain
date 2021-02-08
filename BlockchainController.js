@@ -54,8 +54,8 @@ class BlockchainController {
         });
     }
 
-    // Endpoint that allow Submit a Star, yu need first to `requestOwnership` to have the message (POST endpoint)
-    submitStar() {
+    // Endpoint that allow Submit a Star, you need first to `requestOwnership` to have the message (POST endpoint)
+    async submitStar() {
         this.app.post("/submitstar", async (req, res) => {
             if(req.body.address && req.body.message && req.body.signature && req.body.star) {
                 const address = req.body.address;
