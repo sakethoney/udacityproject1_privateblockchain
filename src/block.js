@@ -45,7 +45,13 @@ class Block {
             // Returning the Block is not valid
             
             // Returning the Block is valid
-
+            let hashCopy = self.hash;
+            self.hash = null;
+            if(SHA256(JSON.stringify(self)).toString() === hashCopy){
+                resolve(true);
+            }else{
+                resolve(false);
+            }
         });
     }
 
