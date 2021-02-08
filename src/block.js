@@ -67,7 +67,7 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             if(self.height===0){
-                reject('Can not return data for Genesis Block');
+                reject(new Error('Can not return data for Genesis Block'));
             }
             resolve(JSON.parse(hex2ascii(self.body)));
         });
