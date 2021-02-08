@@ -10,6 +10,11 @@ beforeEach(() => {
     block.hash = SHA256(JSON.stringify(block)).toString();
 });
 
-test('test get data', () => {
-    console.log(block.getBData());
+test('test get data rejection', () => {
+  return expect(block.getBData()).rejects.toThrow('Can not return data for Genesis Block');
 });
+
+test('test get data with decoded body', () => {
+    block.height = 1;
+    return expect(block.getBData()).resolves.toBe('Genesis Block');
+  });

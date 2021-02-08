@@ -69,7 +69,8 @@ class Block {
             if(self.height===0){
                 reject(new Error('Can not return data for Genesis Block'));
             }
-            resolve(JSON.parse(hex2ascii(self.body)));
+            let dataObj = JSON.parse(hex2ascii(self.body));
+            resolve(dataObj.data);
         });
 
     }
