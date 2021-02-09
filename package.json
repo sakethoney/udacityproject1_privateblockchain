@@ -2,11 +2,11 @@
   "name": "project_1",
   "version": "1.0.0",
   "description": "This project creates a Blockchain application to store data into the blocks",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "jest"
   },
-  "author": "Udacity - jose.morales@udacity.com",
+  "author": "saket.kumar.cs@gmail.com",
   "license": "ISC",
   "dependencies": {
     "bitcoinjs-lib": "^4.0.3",

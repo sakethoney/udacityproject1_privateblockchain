@@ -65,15 +65,23 @@ class Blockchain {
     _addBlock(block) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-           block.time = new Date().getTime().toString().slice(0,-3);
-           if(self.chain.length > 0){
-            block.previousBlockHash = self.chain[self.chain.length-1].hash;
-            block.height = self.chain.length;
-           }
-           block.hash = SHA256(JSON.stringify(block)).toString();
-           self.chain.push(block);
-           
-           resolve(this.getBlockByHash(block.hash));
+         if(block instanceof BlockClass.Block){
+            block.time = new Date().getTime().toString().slice(0, -3);
+            if (self.chain.length > 0) {
+                block.previousBlockHash = self.chain[self.chain.length - 1].hash;
+                block.height = self.chain.length;
+            }
+            block.time = new Date().getTime().toString().slice(0, -3);
+            block.hash = SHA256(JSON.stringify(block)).toString();
+            let blockIndex = self.chain.push(block);
+            if (blockIndex) {
+                resolve(self.chain.[blockIndex-1]);
+            } else {
+                reject(new Error('Exception while adding block to the chain'));
+            }
+        }else {
+            reject(new Error('Can add only objects of type Block'));
+        }
         });
     }
 
@@ -87,7 +95,7 @@ class Blockchain {
      */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-            
+            resolve(address+':'+`${new Date().getTime().toString().slice(0, -3) }:starRegistry`);
         });
     }
 
