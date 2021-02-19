@@ -25,3 +25,13 @@ test('difference in mins', () => {
     let time2 = new Date().getTime().toString().slice(0, -3);
     return expect((((time2 - time1)/60) > 5)).toBe(true);
 });
+
+test('add Second block successfully', () => {
+    let block = new BlockClass.Block({ data: 'Second Block' });
+    return expect(blockChainObj._addBlock(block)).resolves.toBe(block);
+});
+
+test('validate the chain for any changes', () => {
+    let errorLog = [];
+    return expect(blockChainObj.validateChain()).resolves.toStrictEqual(errorLog);
+});

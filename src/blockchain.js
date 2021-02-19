@@ -119,7 +119,16 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            let block = new BlockClass.Block({data: 'Star'});
+            let messageTime = parseInt(message.split(':')[1]);
+            let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
+            if((( currentTime - messageTime ) / 60 ) > 5){
+                reject(new Error('More than 5 mins elapsed since the signing of the message'));
+            }
+            //check with the ! operator if message is verified
+            if(!bitcoinMessage.verify(message, address, signature)){
+                reject(new Error('Not able to verify the message'));
+            }
+            let block = new BlockClass.Block({data: star});
             resolve(this._addBlock(block));
         });
     }
@@ -188,8 +197,41 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            
+            for (var i = 0; i < self.chain.length - 1; i++) {
+                // validate block
+                if (!self.validateBlock(i)) {
+                    errorLog.push(i);
+                }
+                // compare blocks hash link
+                let blockHash = self.chain[i].hash;
+                let previousHash = self.chain[i + 1].previousBlockHash;
+                if (blockHash !== previousHash) {
+                    errorLog.push(i);
+                }
+            }
+            if (errorLog.length > 0) {
+                console.log('Block errors = ' + errorLog.length);
+            } else {
+                console.log('No errors detected');
+            }
+            resolve(errorLog);
         });
+    }
+
+    // validate block
+    async validateBlock(blockHeight) {
+        let self = this;
+        let block = await self.getBlockByHeight(blockHeight);
+        const blockHash = block.hash;
+        block.hash = null;
+        let validBlockHash = SHA256(JSON.stringify(block)).toString();
+        block.hash = blockHash;
+        if (block.hash === validBlockHash) {
+            return true;
+        } else {
+            console.log('Block #' + blockHeight + ' invalid hash:\n' + block.hash + '<>' + validBlockHash);
+            return false;
+        }
     }
 
 }
