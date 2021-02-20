@@ -11,6 +11,7 @@
 const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./block.js');
 const bitcoinMessage = require('bitcoinjs-message');
+const hex2ascii = require('hex2ascii');
 
 class Blockchain {
 
@@ -75,7 +76,7 @@ class Blockchain {
             block.hash = SHA256(JSON.stringify(block)).toString();
             let blockIndex = self.chain.push(block);
             if (blockIndex) {
-                resolve(self.chain.[blockIndex-1]);
+                resolve(self.chain[blockIndex-1]);
             } else {
                 reject(new Error('Exception while adding block to the chain'));
             }
@@ -119,17 +120,22 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            let messageTime = parseInt(message.split(':')[1]);
-            let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
-            if((( currentTime - messageTime ) / 60 ) > 5){
-                reject(new Error('More than 5 mins elapsed since the signing of the message'));
-            }
-            //check with the ! operator if message is verified
-            if(!bitcoinMessage.verify(message, address, signature)){
-                reject(new Error('Not able to verify the message'));
-            }
-            let block = new BlockClass.Block({data: star});
-            resolve(this._addBlock(block));
+            try {
+                let messageTime = parseInt(message.split(':')[1]);
+                let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
+                if (((currentTime - messageTime) / 60) > 5) {
+                    return reject(new Error('More than 5 mins elapsed since the signing of the message'));
+                }
+                //check with the ! operator if message is verified
+                if (!bitcoinMessage.verify(message, address, signature)) {
+                   return reject(new Error('Not able to verify the message'));
+                }
+                let block = new BlockClass.Block({ data: star });
+                block.owner = address;
+                resolve(this._addBlock(block));
+            } catch (error) {
+                return reject(new Error('Error while adding the block to chain'));
+            }         
         });
     }
 
@@ -174,13 +180,22 @@ class Blockchain {
      * Remember the star should be returned decoded.
      * @param {*} address 
      */
-    getStarsByWalletAddress (address) {
+    getStarsByWalletAddress(address) {
         let self = this;
-        let stars = [];
+        class ownedBlock {
+            constructor(address, star) {
+                this.owner = address;
+                this.star = star;
+            }
+        }
         return new Promise((resolve, reject) => {
-            stars = self.chain.filter(p => p.address === address)[0];
-            if(stars.length > 0){
-                resolve(stars);
+            let blocks = self.chain.filter(p => p.owner === address);
+            let ownedBlocks = [];
+            for (let block of blocks) {
+                ownedBlocks.push(new ownedBlock(address, hex2ascii(block.body)));
+            }
+            if (ownedBlocks.length > 0) {
+                resolve(ownedBlocks);
             } else {
                 resolve(null);
             }
