@@ -76,7 +76,12 @@ class Blockchain {
             block.hash = SHA256(JSON.stringify(block)).toString();
             let blockIndex = self.chain.push(block);
             if (blockIndex) {
-                resolve(self.chain[blockIndex-1]);
+                let errorLog  = this.validateChain();
+                if(errorLog.length > 0){
+                    reject(new Error('Blockchain validation failed '));
+                }else{
+                    resolve(self.chain[blockIndex-1]);
+                }
             } else {
                 reject(new Error('Exception while adding block to the chain'));
             }
@@ -192,7 +197,7 @@ class Blockchain {
             let blocks = self.chain.filter(p => p.owner === address);
             let ownedBlocks = [];
             for (let block of blocks) {
-                ownedBlocks.push(new ownedBlock(address, hex2ascii(block.body)));
+                ownedBlocks.push(new ownedBlock(address, JSON.stringify(hex2ascii(block.body))));
             }
             if (ownedBlocks.length > 0) {
                 resolve(ownedBlocks);
