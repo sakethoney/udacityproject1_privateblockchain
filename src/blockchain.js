@@ -36,7 +36,7 @@ class Blockchain {
      */
     async initializeChain() {
         if( this.height === -1){
-            let block = new BlockClass.Block({data: 'Genesis Block'});
+            let block = new BlockClass.Block({star: 'Genesis Block',owner:null});
             block.height = 0;
             await this._addBlock(block);
         }
@@ -135,7 +135,7 @@ class Blockchain {
                 if (!bitcoinMessage.verify(message, address, signature)) {
                    return reject(new Error('Not able to verify the message'));
                 }
-                let block = new BlockClass.Block({ data: star });
+                let block = new BlockClass.Block({ star: star, owner:address });
                 block.owner = address;
                 resolve(this._addBlock(block));
             } catch (error) {
@@ -187,17 +187,12 @@ class Blockchain {
      */
     getStarsByWalletAddress(address) {
         let self = this;
-        class ownedBlock {
-            constructor(address, star) {
-                this.owner = address;
-                this.star = star;
-            }
-        }
+    
         return new Promise((resolve, reject) => {
             let blocks = self.chain.filter(p => p.owner === address);
             let ownedBlocks = [];
             for (let block of blocks) {
-                ownedBlocks.push(new ownedBlock(address, JSON.stringify(hex2ascii(block.body))));
+                ownedBlocks.push(hex2ascii(block.body));
             }
             if (ownedBlocks.length > 0) {
                 resolve(ownedBlocks);
