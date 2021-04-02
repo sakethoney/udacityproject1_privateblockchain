@@ -214,7 +214,8 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             for (var i = 0; i < self.chain.length - 1; i++) {
                 // validate block
-                if (!self.chain[i].validate()) {
+                let valid = await self.chain[i].validate()
+                if (!valid) {
                     errorLog.push(i);
                 }
                 // compare blocks hash link
