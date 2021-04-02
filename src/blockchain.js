@@ -76,7 +76,7 @@ class Blockchain {
             block.hash = SHA256(JSON.stringify(block)).toString();
             let blockIndex = self.chain.push(block);
             if (blockIndex) {
-                let errorLog  = this.validateChain();
+                let errorLog  = await self.validateChain();
                 if(errorLog.length > 0){
                     reject(new Error('Blockchain validation failed '));
                 }else{
@@ -214,6 +214,31 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             for (var i = 0; i < self.chain.length - 1; i++) {
                 // validate block
+                if (!self.chain[i].validate()) {
+                    errorLog.push(i);
+                }
+                // compare blocks hash link
+                let blockHash = self.chain[i].hash;
+                let previousHash = self.chain[i + 1].previousBlockHash;
+                if (blockHash !== previousHash) {
+                    errorLog.push(i);
+                }
+            }
+            if (errorLog.length > 0) {
+                console.log('Block errors = ' + errorLog.length);
+            } else {
+                console.log('No errors detected');
+            }
+            resolve(errorLog);
+        });
+    }
+  
+    validateChainOld() {
+        let self = this;
+        let errorLog = [];
+        return new Promise(async (resolve, reject) => {
+            for (var i = 0; i < self.chain.length - 1; i++) {
+                // validate block
                 if (!self.validateBlock(i)) {
                     errorLog.push(i);
                 }
@@ -232,7 +257,6 @@ class Blockchain {
             resolve(errorLog);
         });
     }
-
     // validate block
     async validateBlock(blockHeight) {
         let self = this;
